@@ -2,7 +2,7 @@ import axios from 'axios'
 import router from '@/router'
 
 const options = {
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: 'http://localhost:8876/api',
   withCredentials: true,
 }
 
@@ -25,8 +25,8 @@ instance.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       try {
         const response = await instance.post('/auth/refresh').then((res) => res)
-        localStorage.setItem('token', response.data.token)
-        return instance(error.request)
+        localStorage.setItem('token', response.data.access_token)
+        return instance(error.response.request)
       } catch (error) {
         localStorage.removeItem('token')
         router.push('/auth')

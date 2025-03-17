@@ -15,6 +15,6 @@ export const priorityLabels = {
 export const statusLabels = {
   new: 'Новая',
   work: 'В работе',
-  test: 'На тестировании',
+  test: 'Тестирование',
   closed: 'Завершена',
 }

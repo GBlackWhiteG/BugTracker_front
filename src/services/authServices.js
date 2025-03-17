@@ -17,7 +17,7 @@ class AuthService {
     return await axiosClassic
       .post('/auth/register', { name, email, password, password_confirmation })
       .then((res) => res)
-      .catch((err) => err)
+      .catch((err) => err.response)
   }
 
   async logout() {
@@ -27,7 +27,7 @@ class AuthService {
         localStorage.removeItem('token')
         router.push('/auth')
       })
-      .catch((err) => err)
+      .catch((err) => err.response)
   }
 
   async forgotPassword(email) {
@@ -35,21 +35,21 @@ class AuthService {
     return await axiosClassic
       .post('/auth/forgot-password', { email })
       .then((res) => res)
-      .catch((err) => err)
+      .catch((err) => err.response)
   }
 
   async resetPassword({ email, token, password, password_confirmation }) {
     return await axiosClassic
       .post('/auth/reset-password', { email, token, password, password_confirmation })
       .then((res) => res)
-      .catch((err) => err)
+      .catch((err) => err.response)
   }
 
   async verifyEmail(id, hash) {
     return await axiosClassic
       .get(`/email/verify/${id}/${hash}`)
       .then((res) => res)
-      .catch((err) => err)
+      .catch((err) => err.response)
   }
 }
 

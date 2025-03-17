@@ -1,13 +1,13 @@
 <script setup>
 import router from '@/router'
 import { bugService } from '@/services/bugServices'
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { criticalityLabels } from '../utils/labels'
 import { statusLabels } from '../utils/labels'
 import { priorityLabels } from '../utils/labels'
 import Comment from '../components/Comment.vue'
-import { commentService } from '../services/commentServices'
+import CreateBug from '../components/CreateComment.vue'
 
 const route = useRoute()
 const id = route.params.id
@@ -17,6 +17,57 @@ onMounted(async () => {
   bug.value = await bugService.getBug(id).then((res) => res.data)
 })
 
+const updateData = reactive({
+  title: '',
+  description: '',
+  steps: '',
+  files: [],
+})
+
+const selectedCriticality = ref('')
+const selectedStatus = ref('')
+const selectedPriority = ref('')
+
+watch(bug, (newBug) => {
+  selectedCriticality.value = newBug.criticality
+  selectedStatus.value = newBug.status
+  selectedPriority.value = newBug.priority
+})
+
+const isEditMode = ref(false)
+const toggleEditMode = () => {
+  isEditMode.value = !isEditMode.value
+  updateData.title = bug.value.title
+  updateData.description = bug.value.description
+  updateData.steps = bug.value.steps
+}
+
+const uploadFiles = (e) => {
+  updateData.files = Array.from(e.target.files)
+}
+
+const updateHandler = async (id) => {
+  const formData = new FormData()
+  Object.entries(updateData).forEach(([key, item]) => {
+    if (key === 'files') {
+      item.forEach((file, index) => {
+        formData.append(`files[${index}]`, file)
+      })
+    } else {
+      formData.append(key, item)
+    }
+  })
+
+  const response = bugService.updateBug(id, formData)
+}
+
+const updateFieldHandler = async (id, changeField, newValue) => {
+  const response = bugService.updateBugsField(id, {
+    change_field: changeField,
+    new_value: newValue,
+  })
+}
+
 const deleteHandler = async (id) => {
   const response = await bugService.deleteBug(id).then((res) => {
     if (res.status === 200) {
@@ -25,57 +76,98 @@ const deleteHandler = async (id) => {
   })
 }
 
-const commentData = reactive({
-  bug_id: id,
-  comment: '',
-})
-
-const commentFormHandler = async (e) => {
-  e.preventDefault()
-  const response = commentService.addComment(commentData)
+const deleteImageHandler = async (id) => {
+  const response = await bugService.deleteBugsFile(id).then((res) => res)
 }
 </script>
 
 <template>
   <main>
     <section>
-      <h1>{{ bug.title }}</h1>
-      <p>{{ bug.description }}</p>
+      <form v-if="isEditMode" @submit.prevent="updateHandler(bug.id)">
+        <input type="text" placeholder="Заголовок" v-model="updateData.title" />
+        <textarea
+          cols="30"
+          rows="10"
+          placeholder="Описание"
+          v-model="updateData.description"
+        ></textarea>
+        <label>
+          <span>Шаги воспроизведения</span>
+          <textarea cols="30" rows="10" v-model="updateData.steps"></textarea>
+        </label>
+        <input type="file" multiple @change="uploadFiles" />
+        <button type="submit">Сохранить</button>
+      </form>
+      <div v-if="!isEditMode">
+        <h1>{{ bug.title }}</h1>
+        <p>{{ bug.description }}</p>
+        <label>
+          <span>Шаги воспроизведения:</span>
+          <p>{{ bug.steps }}</p>
+        </label>
+      </div>
+      <div class="card-files-wrapper">
+        <div v-for="file in bug.files" :key="file.id">
+          <a :href="file.file_url" target="_blank">Файл</a>
+          <form @submit.prevent="deleteImageHandler(file.id)">
+            <button v-if="isEditMode" type="submit">Удалить</button>
+          </form>
+        </div>
+      </div>
       <div class="card-info-wrapper">
         <div class="card-info">
           <span>Критичность:</span>
-          <span>{{ criticalityLabels[bug.criticality] }}</span>
+          <select
+            v-model="selectedCriticality"
+            @change="updateFieldHandler(bug.id, 'criticality', selectedCriticality)"
+          >
+            <option v-for="(label, key) in criticalityLabels" :value="key" :key="key">
+              {{ label }}
+            </option>
+          </select>
         </div>
         <div class="card-info">
           <span>Статус:</span>
-          <span>{{ statusLabels[bug.status] }}</span>
+          <select
+            v-model="selectedStatus"
+            @change="updateFieldHandler(bug.id, 'status', selectedStatus)"
+          >
+            <option v-for="(label, key) in statusLabels" :value="key" :key="key">
+              {{ label }}
+            </option>
+          </select>
         </div>
         <div class="card-info">
           <span>Приоритетность:</span>
-          <span>{{ priorityLabels[bug.priority] }}</span>
+          <select
+            v-model="selectedPriority"
+            @change="updateFieldHandler(bug.id, 'priority', selectedPriority)"
+          >
+            <option v-for="(label, key) in priorityLabels" :value="key" :key="key">
+              {{ label }}
+            </option>
+          </select>
         </div>
       </div>
-      <div class="card-images-wrapper">
-        <div v-for="file in bug.files" :key="file.id">
-          <a :href="file.file_url">Файл</a>
-        </div>
-      </div>
+      <button @click="toggleEditMode">Изменить</button>
       <button @click="deleteHandler(bug.id)">Удалить</button>
     </section>
     <section class="comments">
       <h4>Добавить комментарий</h4>
-      <form @submit="commentFormHandler">
-        <input type="hidden" v-model="commentData.bug_id" />
-        <input type="text" v-model="commentData.comment" />
-        <button type="submit">Отправить</button>
-      </form>
+      <CreateBug :bug_id="id" />
       <h4>Комментарии:</h4>
-      <ul class="comments-list" v-for="comment in bug.comments" :key="comment.id">
-        <Comment :comment="comment" />
+      <ul class="comments-list">
+        <Comment v-for="comment in bug.comments" :key="comment.id" :comment="comment" />
       </ul>
     </section>
   </main>
 </template>
 
 <style scoped>
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 </style>

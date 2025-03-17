@@ -7,22 +7,22 @@ const props = defineProps({ bug: Object })
 </script>
 
 <template>
-  <router-link class="card-router" :to="`/bugs/${bug.id}`">
+  <router-link class="card-router" :to="`/bugs/${bug._id}`">
     <div class="bug-card">
-      <h4>{{ bug.title }}</h4>
-      <p>{{ bug.description }}</p>
+      <h4 class="title">{{ bug._source.title }}</h4>
+      <p class="description">{{ bug._source.description }}</p>
       <div class="card-info-wrapper">
         <div class="card-info">
           <span>Критичность:</span>
-          <span>{{ criticalityLabels[bug.criticality] }}</span>
+          <span>{{ criticalityLabels[bug._source.criticality] }}</span>
         </div>
         <div class="card-info">
           <span>Статус:</span>
-          <span>{{ statusLabels[bug.status] }}</span>
+          <span>{{ statusLabels[bug._source.status] }}</span>
         </div>
         <div class="card-info">
           <span>Приоритетность:</span>
-          <span>{{ priorityLabels[bug.priority] }}</span>
+          <span>{{ priorityLabels[bug._source.priority] }}</span>
         </div>
       </div>
     </div>
@@ -32,10 +32,37 @@ const props = defineProps({ bug: Object })
 <style scoped>
 .card-router {
   color: #000;
+  height: 100%;
+  display: block;
   text-decoration: none;
 }
 
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  line-clamp: 1;
+  box-orient: vertical;
+}
+
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -moz-box;
+  -moz-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-clamp: 3;
+  box-orient: vertical;
+}
+
 .bug-card {
+  height: 100%;
   padding: 1rem;
   border: 1px solid #000000;
   border-radius: 0.25rem;

@@ -4,6 +4,7 @@ import AuthView from '../views/AuthView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
 import BugView from '../views/BugView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import VerifyEmail from '../views/VerifyEmailView.vue'
 
 const router = createRouter({
@@ -28,6 +29,11 @@ const router = createRouter({
       path: '/reset-password',
       name: 'reset-password',
       component: ResetPasswordView,
+    },
+    {
+      path: '/profile/:id',
+      name: 'profile',
+      component: ProfileView,
     },
     {
       path: '/bugs/:id',

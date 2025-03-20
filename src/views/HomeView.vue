@@ -8,8 +8,10 @@ import CreateBug from '@/components/CreateBug.vue'
 import Bug from '../components/Bug.vue'
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
+import { authService } from '@/services/authServices'
 
 const bugs = ref([])
+const role = ref('')
 
 window.Pusher = Pusher
 window.Echo = new Echo({
@@ -24,6 +26,7 @@ window.Echo = new Echo({
 })
 
 onMounted(async () => {
+  role.value = authService.me().then((res) => res.data.role)
   const bugsData = await bugService
     .searchBugs(searchInput.value, { ...filters.value })
     .then((res) => res)
@@ -67,7 +70,7 @@ watch(filters, searchBugs, { deep: true })
 <template>
   <main>
     <section class="bugs">
-      <div>
+      <div v-if="role === 'admin' || role === 'manager'">
         <h3>Создать баг</h3>
         <CreateBug />
       </div>
@@ -78,24 +81,30 @@ watch(filters, searchBugs, { deep: true })
             <input type="search" v-model="searchInput" placeholder="Поиск" />
           </div>
           <div class="filters">
-            <select v-model="filters.criticality">
-              <option value="">Критичность</option>
-              <option v-for="(value, key) in criticalityLabels" :value="key" :key="key">
-                {{ value }}
-              </option>
-            </select>
-            <select v-model="filters.status">
-              <option value="">Статус</option>
-              <option v-for="(value, key) in statusLabels" :value="key" :key="key">
-                {{ value }}
-              </option>
-            </select>
-            <select v-model="filters.priority">
-              <option value="">Приоритетность</option>
-              <option v-for="(value, key) in priorityLabels" :value="key" :key="key">
-                {{ value }}
-              </option>
-            </select>
+            <div class="filter-item">
+              <span>Критичность</span>
+              <select v-model="filters.criticality">
+                <option v-for="(value, key) in criticalityLabels" :value="key" :key="key">
+                  {{ value }}
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span>Статус</span>
+              <select v-model="filters.status">
+                <option v-for="(value, key) in statusLabels" :value="key" :key="key">
+                  {{ value }}
+                </option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <span>Приоритетность</span>
+              <select v-model="filters.priority">
+                <option v-for="(value, key) in priorityLabels" :value="key" :key="key">
+                  {{ value }}
+                </option>
+              </select>
+            </div>
             <button @click="toggleCreatedSort">Дата создания</button>
           </div>
         </div>
@@ -135,8 +144,24 @@ watch(filters, searchBugs, { deep: true })
 }
 
 .filters {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.filter-item > select {
+  height: 100%;
+}
+
+.filter-item > span {
+  position: absolute;
+  top: -25px;
 }
 
 .bug {

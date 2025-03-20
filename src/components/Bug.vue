@@ -7,7 +7,7 @@ const props = defineProps({ bug: Object })
 </script>
 
 <template>
-  <router-link class="card-router" :to="`/bugs/${bug._id}`">
+  <router-link class="card-router" :to="`/bugs/${bug._id ?? bug._source.id}`">
     <div class="bug-card">
       <h4 class="title">{{ bug._source.title }}</h4>
       <p class="description">{{ bug._source.description }}</p>

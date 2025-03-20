@@ -1,13 +1,21 @@
 <script setup>
 import { commentService } from '@/services/commentServices'
-import { reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import DOMPurify from 'dompurify'
+import { authService } from '@/services/authServices'
 
 const props = defineProps({ comment: Object })
 
 const updateData = reactive({
   comment: '',
   files: [],
+})
+
+const auth_user_id = ref()
+
+onMounted(async () => {
+  const response = await authService.me().then((res) => res)
+  auth_user_id.value = response.data.id
 })
 
 watch(
@@ -72,8 +80,10 @@ const deleteFileHandler = async (id) => {
         <button type="submit">Удалить</button>
       </form>
     </div>
-    <button @click="toggleEditMode">Редактировать</button>
-    <form @submit.prevent="deleteHandler(comment.id)"><button type="submit">Удалить</button></form>
+    <button v-if="comment.user_id === auth_user_id" @click="toggleEditMode">Редактировать</button>
+    <form v-if="comment.user_id === auth_user_id" @submit.prevent="deleteHandler(comment.id)">
+      <button type="submit">Удалить</button>
+    </form>
   </li>
 </template>
 

@@ -9,4 +9,4 @@ class BugHistory {
   }
 }
 
-export const bugHistory = new BugHistory()
+export const bugHistoryService = new BugHistory()

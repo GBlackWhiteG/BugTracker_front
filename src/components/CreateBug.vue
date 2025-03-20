@@ -1,6 +1,7 @@
 <script setup>
 import { bugService } from '@/services/bugServices'
-import { reactive } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import { userService } from '@/services/userServices'
 
 const data = reactive({
   title: '',
@@ -16,6 +17,34 @@ const data = reactive({
 const uploadFiles = (e) => {
   data.files = Array.from(e.target.files)
 }
+
+const responsibleUser = ref('')
+const suggestions = ref([])
+
+const selectSuggestion = (user) => {
+  responsibleUser.value = user.nickname
+  data.responsible_user_id = user.id
+  suggestions.value = []
+}
+
+const findUserSuggestions = async (query) => {
+  if (query == '') {
+    suggestions.value = []
+    data.responsible_user_id = ''
+    return
+  }
+
+  if (data.responsible_user_id !== '') return
+
+  const response = await userService.getUserSuggestions(query).then((res) => res.data)
+  suggestions.value = response.data
+}
+
+let timeout
+watch(responsibleUser, () => {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => findUserSuggestions(responsibleUser.value), 500)
+})
 
 const formHandler = async (e) => {
   e.preventDefault()
@@ -71,7 +100,22 @@ const formHandler = async (e) => {
       </label>
     </div>
     <textarea v-model="data.steps" cols="30" rows="5" placeholder="Шаги воспроизведения"></textarea>
-    <input type="number" v-model="data.responsible_user_id" placeholder="Ответственный" />
+    <label class="responsible-input">
+      <input type="text" v-model="responsibleUser" placeholder="Ответственный (Никнейм)" />
+      <ul v-if="suggestions.length" class="suggestions">
+        <li
+          v-for="sug in suggestions"
+          :key="sug.id"
+          class="suggestions-item"
+          @click="selectSuggestion(sug)"
+        >
+          <div class="suggestions-item-content">
+            <span>{{ sug.name }}</span>
+            <span>{{ sug.nickname }}</span>
+          </div>
+        </li>
+      </ul>
+    </label>
     <input type="file" multiple @change="uploadFiles" />
 
     <button type="submit">Создать</button>
@@ -106,5 +150,45 @@ form button {
   width: 100%;
   font-size: 10px;
   padding: 0.25rem 0.5rem;
+}
+
+.responsible-input {
+  position: relative;
+}
+
+.responsible-input > input {
+  width: 100%;
+}
+
+.suggestions {
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid #000000;
+  border-radius: 0.25rem;
+  background-color: #ffffff;
+  padding: 1rem;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  translate: -50% 110%;
+}
+
+.suggestions-item {
+  border-bottom: 1px solid #000000;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+.suggestions-item:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.suggestions-item-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 </style>

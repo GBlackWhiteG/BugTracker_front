@@ -20,6 +20,13 @@ class AuthService {
       .catch((err) => err.response)
   }
 
+  async me() {
+    return await instance
+      .post('/auth/me')
+      .then((res) => res)
+      .catch((err) => err.response)
+  }
+
   async logout() {
     return await instance
       .post('/auth/logout')

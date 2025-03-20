@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { profileService } from '../services/profileServices'
+import { userService } from '../services/userServices'
 
 const route = useRoute()
 const id = route.params.id
@@ -9,7 +9,7 @@ const id = route.params.id
 const profile = ref({})
 
 onMounted(async () => {
-  const profileData = await profileService.getProfile(id).then((res) => res.data)
+  const profileData = await userService.getProfile(id).then((res) => res.data)
   profile.value = profileData
 })
 </script>

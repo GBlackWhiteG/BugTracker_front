@@ -26,7 +26,7 @@ window.Echo = new Echo({
 })
 
 onMounted(async () => {
-  role.value = authService.me().then((res) => res.data.role)
+  role.value = await authService.me().then((res) => res.data.role)
   const bugsData = await bugService
     .searchBugs(searchInput.value, { ...filters.value })
     .then((res) => res)

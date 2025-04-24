@@ -7,7 +7,7 @@ import { criticalityLabels } from '../utils/labels'
 import { statusLabels } from '../utils/labels'
 import { priorityLabels } from '../utils/labels'
 import Comment from '../components/Comment.vue'
-import CreateBug from '../components/CreateComment.vue'
+import CreateComment from '../components/CreateComment.vue'
 import BugHistory from '@/components/BugHistory.vue'
 import { authService } from '@/services/authServices'
 import { useToast } from 'vue-toast-notification'
@@ -215,7 +215,7 @@ const deleteImageHandler = async (id) => {
     </div>
     <section class="comments">
       <h4>Добавить комментарий</h4>
-      <CreateBug :bug_id="id" />
+      <CreateComment :bug_id="id" />
       <h4>Комментарии:</h4>
       <ul class="comments-list">
         <Comment v-for="comment in bug.comments" :key="comment.id" :comment="comment" />

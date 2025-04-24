@@ -114,7 +114,12 @@ const formHandler = async (e) => {
         </li>
       </ul>
     </label>
-    <input type="file" multiple @change="uploadFiles" />
+    <label class="add-file">
+      <div>
+        <span>{{ data.files.length + ' файла' || 'Добавьте файлы' }}</span>
+      </div>
+      <input type="file" multiple @change="uploadFiles" />
+    </label>
 
     <button type="submit" class="button button-green">Создать</button>
   </form>
@@ -156,6 +161,20 @@ form button {
 
 .responsible-input > input {
   width: 100%;
+}
+
+.add-file > input {
+  display: none;
+}
+
+.add-file > div {
+  height: 40px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000000;
+  cursor: pointer;
 }
 
 .suggestions {

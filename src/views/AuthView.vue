@@ -1,6 +1,9 @@
 <script setup>
 import { reactive } from 'vue'
 import { authService } from '../services/authServices'
+import { useToast } from 'vue-toast-notification'
+
+const $toast = useToast()
 
 const loginData = reactive({
   email: '',
@@ -16,12 +19,32 @@ const registerData = reactive({
 
 const loginHandler = async (e) => {
   e.preventDefault()
-  const response = await authService.login(loginData)
+  const response = await authService.login(loginData).then((res) => {
+    if (res.status === 200) {
+      $toast.success('Успешно')
+      return
+    }
+
+    $toast.error(res.data.error)
+  })
 }
 
 const registerHandler = async (e) => {
   e.preventDefault()
-  const data = await authService.register(registerData)
+
+  const data = await authService.register(registerData).then((res) => {
+    if (res.status === 200) {
+      $toast.success('Успешно')
+      return
+    }
+
+    let errorMessage = ''
+    for (const [field, error] of Object.entries(JSON.parse(res.data))) {
+      errorMessage += `${field}: ${error}\n`
+    }
+
+    $toast.error(errorMessage)
+  })
 }
 </script>
 
@@ -33,7 +56,7 @@ const registerHandler = async (e) => {
         <form @submit="loginHandler">
           <input type="email" v-model="loginData.email" placeholder="Email" />
           <input type="password" v-model="loginData.password" placeholder="Пароль" />
-          <button type="submit">Войти</button>
+          <button type="submit" class="button button-blue">Войти</button>
         </form>
         <router-link :to="'/forgot-password'">Забыли пароль?</router-link>
       </div>
@@ -48,7 +71,7 @@ const registerHandler = async (e) => {
             v-model="registerData.password_confirmation"
             placeholder="Подтвердите пароль"
           />
-          <button type="submit">Зарегистрироваться</button>
+          <button type="submit" class="button button-green">Зарегистрироваться</button>
         </form>
       </div>
     </section>
@@ -74,5 +97,10 @@ const registerHandler = async (e) => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.login > form > input,
+.register > form > input {
+  padding: 0.25rem 0.5rem;
 }
 </style>

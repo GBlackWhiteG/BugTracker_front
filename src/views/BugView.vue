@@ -10,7 +10,10 @@ import Comment from '../components/Comment.vue'
 import CreateBug from '../components/CreateComment.vue'
 import BugHistory from '@/components/BugHistory.vue'
 import { authService } from '@/services/authServices'
+import { useToast } from 'vue-toast-notification'
+import { File } from 'lucide-vue-next'
 
+const $toast = useToast()
 const route = useRoute()
 const id = route.params.id
 
@@ -66,22 +69,55 @@ const updateHandler = async (id) => {
 }
 
 const updateFieldHandler = async (id, changeField, newValue) => {
-  const response = bugService.updateBugsField(id, {
-    change_field: changeField,
-    new_value: newValue,
-  })
+  const response = bugService
+    .updateBugsField(id, {
+      change_field: changeField,
+      new_value: newValue,
+    })
+    .then((res) => {
+      if (res.status === 200) {
+        $toast.success('Успешно обновлено')
+      } else {
+        let errorMessage = ''
+        for (const [field, error] of Object.entries(JSON.parse(res.data))) {
+          errorMessage += `${field}: ${error}\n`
+        }
+
+        $toast.error(errorMessage)
+      }
+    })
 }
 
 const deleteHandler = async (id) => {
   const response = await bugService.deleteBug(id).then((res) => {
     if (res.status === 200) {
       router.push('/')
+      $toast.success('Успешно удалено')
+    } else {
+      let errorMessage = ''
+      for (const [field, error] of Object.entries(JSON.parse(res.data))) {
+        errorMessage += `${field}: ${error}\n`
+      }
+
+      $toast.error(errorMessage)
     }
   })
 }
 
 const deleteImageHandler = async (id) => {
-  const response = await bugService.deleteBugsFile(id).then((res) => res)
+  const response = await bugService.deleteBugsFile(id).then((res) => {
+    if (res.status === 200) {
+      router.push('/')
+      $toast.success('Успешно удалено')
+    } else {
+      let errorMessage = ''
+      for (const [field, error] of Object.entries(JSON.parse(res.data))) {
+        errorMessage += `${field}: ${error}\n`
+      }
+
+      $toast.error(errorMessage)
+    }
+  })
 }
 </script>
 
@@ -89,7 +125,7 @@ const deleteImageHandler = async (id) => {
   <main>
     <div class="bug-card">
       <section>
-        <form v-if="isEditMode" @submit.prevent="updateHandler(bug.id)">
+        <form v-if="isEditMode" @submit.prevent="updateHandler(bug.id)" class="bug-change-form">
           <input type="text" placeholder="Заголовок" v-model="updateData.title" />
           <textarea
             cols="30"
@@ -97,14 +133,14 @@ const deleteImageHandler = async (id) => {
             placeholder="Описание"
             v-model="updateData.description"
           ></textarea>
-          <label>
+          <label class="bug-change-steps">
             <span>Шаги воспроизведения</span>
             <textarea cols="30" rows="10" v-model="updateData.steps"></textarea>
           </label>
           <input type="file" multiple @change="uploadFiles" />
-          <button type="submit">Сохранить</button>
+          <button type="submit" class="button button-green">Сохранить</button>
         </form>
-        <div v-if="!isEditMode">
+        <div v-if="!isEditMode" class="bug-info">
           <h1>{{ bug.title }}</h1>
           <p>{{ bug.description }}</p>
           <label>
@@ -113,8 +149,8 @@ const deleteImageHandler = async (id) => {
           </label>
         </div>
         <div class="card-files-wrapper">
-          <div v-for="file in bug.files" :key="file.id">
-            <a :href="file.file_url" target="_blank">Файл</a>
+          <div v-for="file in bug.files" :key="file.id" class="files">
+            <a :href="file.file_url" target="_blank"><File />{{ file.name }}</a>
             <form @submit.prevent="deleteImageHandler(file.id)">
               <button v-if="isEditMode" type="submit">Удалить</button>
             </form>
@@ -155,15 +191,25 @@ const deleteImageHandler = async (id) => {
             </select>
           </div>
         </div>
-        <button v-if="role === 'admin' || role === 'manager'" @click="toggleEditMode">
-          Изменить
-        </button>
-        <button v-if="role === 'admin' || role === 'manager'" @click="deleteHandler(bug.id)">
-          Удалить
-        </button>
+        <div class="buttons">
+          <button
+            v-if="role === 'admin' || role === 'manager'"
+            @click="toggleEditMode"
+            class="button button-blue"
+          >
+            Изменить
+          </button>
+          <button
+            v-if="role === 'admin' || role === 'manager'"
+            @click="deleteHandler(bug.id)"
+            class="button button-red"
+          >
+            Удалить
+          </button>
+        </div>
       </section>
       <section class="bug-history">
-        <h4>История изменений</h4>
+        <h4>История изменений (последние 3)</h4>
         <BugHistory :bug_id="bug.id" />
       </section>
     </div>
@@ -179,16 +225,75 @@ const deleteImageHandler = async (id) => {
 </template>
 
 <style scoped>
+.bug-change-form,
+.bug-change-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bug-change-steps {
+  gap: 0.25rem;
+}
+
+.bug-change-form input,
+.bug-change-form textarea {
+  padding: 0.5rem;
+}
+
 .bug-card {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 2fr 1fr;
   align-items: start;
   gap: 2rem;
+  margin-top: 2rem;
+}
+
+.card-files-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 .comments-list {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+.card-info-wrapper {
+  display: flex;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-info > select {
+  padding: 0.25rem 0.5rem;
+}
+
+.comments {
+  margin-bottom: 3rem;
+}
+
+.comments > h4 {
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.bug-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.buttons {
+  display: flex;
   gap: 1rem;
 }
 </style>

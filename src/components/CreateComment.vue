@@ -78,10 +78,14 @@ const commentFormHandler = async (e) => {
 </script>
 
 <template>
-  <form @submit="commentFormHandler">
+  <form @submit="commentFormHandler" class="comment-form">
     <input type="hidden" v-model="commentData.bug_id" />
     <label class="comment-input">
-      <input type="text" v-model="commentData.comment" />
+      <input
+        type="text"
+        v-model="commentData.comment"
+        placeholder="Можно упомянуть пользователя, написав @a... (появятся предложения)"
+      />
       <ul v-if="suggestions.length">
         <li
           v-for="sug in suggestions"
@@ -96,14 +100,31 @@ const commentFormHandler = async (e) => {
         </li>
       </ul>
     </label>
-    <input type="file" multiple @change="uploadFiles" />
-    <button type="submit">Отправить</button>
+    <label class="files-input-wrapper">
+      <div>
+        <span>{{ commentData.files.length || '+' }}</span>
+      </div>
+      <input type="file" multiple @change="uploadFiles" />
+    </label>
+    <button type="submit" class="button button-green">Отправить</button>
   </form>
 </template>
 
 <style scoped>
+.comment-form {
+  display: flex;
+  gap: 1rem;
+}
+
 .comment-input {
+  max-width: 600px;
+  width: 100%;
   position: relative;
+}
+
+.comment-input > input {
+  width: 100%;
+  padding: 0.5rem;
 }
 
 .comment-input > ul {
@@ -133,5 +154,36 @@ const commentFormHandler = async (e) => {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.files-input-wrapper {
+  width: 100%;
+  max-width: 35px;
+  height: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+}
+
+.files-input-wrapper > input {
+  display: none;
+}
+
+.files-input-wrapper > div {
+  width: 100%;
+  height: 100%;
+  border: 1px solid black;
+  border-radius: 3px;
+}
+
+.files-input-wrapper > div > span {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -59,15 +59,13 @@ const formHandler = async (e) => {
     }
   })
 
-  const response = await bugService
-    .createBug(formData)
-    .then((res) => res)
-    .catch((err) => err.response)
+  const response = await bugService.createBug(formData).then((res) => res)
 }
 </script>
 
 <template>
   <form @submit="formHandler" class="form">
+    <h3>Создать баг</h3>
     <input type="text" v-model="data.title" placeholder="Заголовок" />
     <textarea v-model="data.description" cols="30" rows="5" placeholder="Описание"></textarea>
     <div class="properties">
@@ -118,7 +116,7 @@ const formHandler = async (e) => {
     </label>
     <input type="file" multiple @change="uploadFiles" />
 
-    <button type="submit">Создать</button>
+    <button type="submit" class="button button-green">Создать</button>
   </form>
 </template>
 

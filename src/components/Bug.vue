@@ -64,7 +64,7 @@ const props = defineProps({ bug: Object })
 .bug-card {
   height: 100%;
   padding: 1rem;
-  border: 1px solid #000000;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
   border-radius: 0.25rem;
 }
 

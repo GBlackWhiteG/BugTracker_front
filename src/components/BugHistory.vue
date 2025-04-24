@@ -29,10 +29,11 @@ watch(
     <li v-for="history in bugHistory" :key="history.id">
       <div>
         <div class="author">
-          <span>{{ history.user.name }}</span>
-          <span>{{ history.user.nickname }}</span>
+          <p>
+            {{ history.user.name }} (@{{ history.user.nickname }}) изменил(-а)
+            {{ filedNames[history.field][0] }}
+          </p>
         </div>
-        <span>{{ filedNames[history.field][0] }}</span>
       </div>
       <div class="history-value-wrapper">
         <div class="history-value">
@@ -52,27 +53,21 @@ watch(
 .bug-history {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .bug-history > li {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-}
-
-.bug-history > li > div {
-  border: 1px solid #000000;
-  padding: 0.5rem;
-}
-
-.author {
-  display: flex;
-  gap: 1rem;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  padding: 1rem 1.5rem;
 }
 
 .history-value-wrapper {
-  display: grid;
-  grid-template-columns: repeat(2, 150px);
+  display: flex;
+  justify-content: space-between;
 }
 
 .history-value {

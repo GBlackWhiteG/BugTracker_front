@@ -3,7 +3,7 @@
 #app {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0 2rem;
   font-weight: normal;
 }
 
@@ -11,4 +11,28 @@ ul,
 ol {
   list-style: none;
   padding: 0;
+}
+
+.button {
+  font-weight: bold;
+  border: none;
+  border-radius: 0.25rem;
+  background-color: transparent;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.button-green {
+  color: white;
+  background-color: green;
+}
+
+.button-blue {
+  color: white;
+  background-color: blue;
+}
+
+.button-red {
+  color: white;
+  background-color: red;
 }

@@ -12,6 +12,7 @@ import { authService } from '@/services/authServices'
 
 const bugs = ref([])
 const role = ref('')
+const isModalOpen = ref(false)
 
 window.Pusher = Pusher
 window.Echo = new Echo({
@@ -70,9 +71,21 @@ watch(filters, searchBugs, { deep: true })
 <template>
   <main>
     <section class="bugs">
-      <div v-if="role === 'admin' || role === 'manager'">
-        <h3>Создать баг</h3>
+      <div
+        v-if="role === 'admin' || role === 'manager'"
+        class="create-bug"
+        :class="{ 'show-create-bug': isModalOpen }"
+      >
         <CreateBug />
+        <div class="arrow-block-wrapper">
+          <div
+            class="arrow-wrapper"
+            :class="{ 'rotate-arrow': isModalOpen }"
+            @click="isModalOpen = !isModalOpen"
+          >
+            <span></span>
+          </div>
+        </div>
       </div>
       <div>
         <h3>Список багов</h3>
@@ -84,6 +97,7 @@ watch(filters, searchBugs, { deep: true })
             <div class="filter-item">
               <span>Критичность</span>
               <select v-model="filters.criticality">
+                <option value="">Не выбрано</option>
                 <option v-for="(value, key) in criticalityLabels" :value="key" :key="key">
                   {{ value }}
                 </option>
@@ -92,6 +106,7 @@ watch(filters, searchBugs, { deep: true })
             <div class="filter-item">
               <span>Статус</span>
               <select v-model="filters.status">
+                <option value="">Не выбрано</option>
                 <option v-for="(value, key) in statusLabels" :value="key" :key="key">
                   {{ value }}
                 </option>
@@ -100,12 +115,19 @@ watch(filters, searchBugs, { deep: true })
             <div class="filter-item">
               <span>Приоритетность</span>
               <select v-model="filters.priority">
+                <option value="">Не выбрано</option>
                 <option v-for="(value, key) in priorityLabels" :value="key" :key="key">
                   {{ value }}
                 </option>
               </select>
             </div>
-            <button @click="toggleCreatedSort">Дата создания</button>
+            <button
+              @click="toggleCreatedSort"
+              class="button button-sort"
+              :class="filters.created_at !== 'desc' ? 'sort-top' : ''"
+            >
+              Дата создания
+            </button>
           </div>
         </div>
         <ul class="bugs-list">
@@ -120,14 +142,86 @@ watch(filters, searchBugs, { deep: true })
 
 <style>
 .bugs {
+  margin-top: 2rem;
+}
+
+.create-bug {
+  max-width: 450px;
+  width: 100%;
+  height: 100%;
   display: flex;
-  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  border-top-right-radius: 3rem;
+  border-bottom-right-radius: 3rem;
+  background-color: #ffffff;
+  padding-left: 2rem;
+  padding-right: 4rem;
+  padding-bottom: 13.8rem;
+  transition: 0.3s ease-in-out;
+  position: absolute;
+  top: 0;
+  left: -390px;
+  z-index: 999;
+}
+
+.show-create-bug {
+  left: 0;
+}
+
+.arrow-block-wrapper {
+  position: relative;
+}
+
+.arrow-wrapper {
+  position: absolute;
+  top: 50%;
+  right: -90px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.arrow-wrapper > span {
+  width: 60px;
+  height: 60px;
+  display: block;
+  position: relative;
+}
+
+.arrow-wrapper > span::before,
+.arrow-wrapper > span::after {
+  content: '';
+  width: 3px;
+  height: 25px;
+  background-color: #000000;
+  position: absolute;
+  top: 30%;
+  left: 65%;
+  transform: translateY(-50%);
+}
+
+.arrow-wrapper > span::before {
+  rotate: -45deg;
+}
+
+.arrow-wrapper > span::after {
+  rotate: 225deg;
+}
+
+.rotate-arrow > span::before {
+  left: 45%;
+  rotate: 45deg;
+}
+
+.rotate-arrow > span::after {
+  left: 45%;
+  rotate: 135deg;
 }
 
 .bugs-list {
-  max-width: 750px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
@@ -167,5 +261,52 @@ watch(filters, searchBugs, { deep: true })
 .bug {
   max-height: 186px;
   height: 100%;
+}
+
+.search {
+  max-width: 400px;
+  width: 100%;
+}
+
+.button-sort {
+  border: 1px solid black;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.25);
+  transition: 0.3s;
+  padding-right: 2rem;
+  position: relative;
+}
+
+.button-sort:after {
+  content: '>';
+  rotate: 90deg;
+  position: absolute;
+  top: 40%;
+  right: 15px;
+  transform: translateX(-50%);
+}
+
+.button-sort:hover {
+  transform: translateY(-5px);
+}
+
+.button-sort:active {
+  transform: translateY(2px);
+}
+
+.sort-top {
+  box-shadow: none;
+}
+
+.sort-top:hover {
+  transform: none;
+}
+
+.sort-top:after {
+  content: '>';
+  rotate: 270deg;
+  position: absolute;
+  top: 15%;
+  right: 15px;
+  transform: translateX(-50%);
 }
 </style>

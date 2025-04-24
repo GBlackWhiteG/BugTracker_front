@@ -116,7 +116,7 @@ const formHandler = async (e) => {
     </label>
     <label class="add-file">
       <div>
-        <span>{{ data.files.length + ' файла' || 'Добавьте файлы' }}</span>
+        <span>{{ data.files.length ? `${data.files.length} файла(-ов)` : 'Добавьте файлы' }}</span>
       </div>
       <input type="file" multiple @change="uploadFiles" />
     </label>

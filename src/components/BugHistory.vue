@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { bugHistoryService } from '../services/bugHistoryServices'
 import { criticalityLabels } from '../utils/labels'
 import { statusLabels } from '../utils/labels'
@@ -15,13 +15,14 @@ const filedNames = {
   priority: ['Приоритетность', priorityLabels],
 }
 
-watch(
-  () => props.bug_id,
-  async () => {
-    const response = await bugHistoryService.getBugHistory(props.bug_id).then((res) => res.data)
-    bugHistory.value = response.data
-  }
-)
+const getBugHistory = async () => {
+  const response = await bugHistoryService.getBugHistory(props.bug_id).then((res) => res.data)
+  bugHistory.value = response.data
+}
+
+watch(() => props.bug_id, getBugHistory)
+
+defineExpose({ getBugHistory })
 </script>
 
 <template>

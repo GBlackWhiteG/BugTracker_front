@@ -7,7 +7,7 @@ class CommentService {
         headers: { 'Content-Type': 'mulipart/form-data' },
       })
       .then((res) => res)
-      .catch((err) => err.response)
+      .catch((err) => err)
   }
 
   async updateComment(id, data) {

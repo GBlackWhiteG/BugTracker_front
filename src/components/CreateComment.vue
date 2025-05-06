@@ -2,9 +2,12 @@
 import { userService } from '@/services/userServices'
 import { reactive, ref, watch } from 'vue'
 import { commentService } from '../services/commentServices'
+import { useToast } from 'vue-toast-notification'
 
 const props = defineProps({ bug_id: Number })
+const emit = defineEmits(['comment-created'])
 
+const $toast = useToast()
 const suggestions = ref([])
 
 const commentData = reactive({
@@ -73,7 +76,21 @@ const commentFormHandler = async (e) => {
     }
   })
 
-  const response = commentService.addComment(formData)
+  const response = await commentService
+    .addComment(formData)
+    .then((res) => {
+      emit('comment-created', res.data.data)
+      commentData.comment = ''
+      commentData.files = []
+    })
+    .catch((err) => {
+      let errorMessage = ''
+      for (const [field, error] of Object.entries(JSON.parse(res.data))) {
+        errorMessage += `${field}: ${error}\n`
+      }
+
+      $toast.error(errorMessage)
+    })
 }
 </script>
 

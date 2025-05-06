@@ -17,6 +17,8 @@ const $toast = useToast()
 const route = useRoute()
 const id = route.params.id
 
+const bugHistoryRef = ref(null)
+
 const bug = ref({})
 const role = ref('')
 onMounted(async () => {
@@ -40,6 +42,10 @@ watch(bug, (newBug) => {
   selectedStatus.value = newBug.status
   selectedPriority.value = newBug.priority
 })
+
+const addComment = (newComment) => {
+  bug.value.comments = [newComment, ...(bug.value.comments || [])]
+}
 
 const isEditMode = ref(false)
 const toggleEditMode = () => {
@@ -77,6 +83,9 @@ const updateFieldHandler = async (id, changeField, newValue) => {
     .then((res) => {
       if (res.status === 200) {
         $toast.success('Успешно обновлено')
+        if (bugHistoryRef.value) {
+          bugHistoryRef.value.getBugHistory()
+        }
       } else {
         let errorMessage = ''
         for (const [field, error] of Object.entries(JSON.parse(res.data))) {
@@ -210,12 +219,12 @@ const deleteImageHandler = async (id) => {
       </section>
       <section class="bug-history">
         <h4>История изменений (последние 3)</h4>
-        <BugHistory :bug_id="bug.id" />
+        <BugHistory :bug_id="bug.id" ref="bugHistoryRef" />
       </section>
     </div>
     <section class="comments">
       <h4>Добавить комментарий</h4>
-      <CreateComment :bug_id="id" />
+      <CreateComment :bug_id="id" @comment-created="addComment" />
       <h4>Комментарии:</h4>
       <ul class="comments-list">
         <Comment v-for="comment in bug.comments" :key="comment.id" :comment="comment" />
